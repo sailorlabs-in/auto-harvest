@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-farm-975 text-farm-100 font-sans;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-farm-950;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-farm-700 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-farm-600;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-farm-950/60 backdrop-blur-xl border border-farm-800/40 rounded-2xl;
+  }
+
+  .glass-panel-dark {
+    @apply bg-farm-975/80 backdrop-blur-xl border border-farm-900/60 rounded-2xl;
+  }
+
+  .glass-panel-accent {
+    @apply bg-olive-950/40 backdrop-blur-xl border border-olive-800/30 rounded-2xl;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-olive-600 to-olive-500 hover:from-olive-500 hover:to-olive-400
+           text-white font-semibold rounded-xl transition-all duration-300
+           shadow-lg shadow-olive-900/30 hover:shadow-olive-800/50
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-farm-800/60 hover:bg-farm-700/60 border border-farm-700/40 hover:border-farm-600/40
+           text-farm-200 font-medium rounded-xl transition-all duration-300
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 text-farm-300 hover:text-farm-100 hover:bg-farm-800/40
+           font-medium rounded-lg transition-all duration-200;
+  }
+
+  .btn-danger {
+    @apply px-6 py-3 bg-red-600/80 hover:bg-red-500/80 border border-red-500/30
+           text-white font-semibold rounded-xl transition-all duration-300
+           active:scale-[0.98];
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-farm-900/60 border border-farm-700/40 rounded-xl
+           text-farm-100 placeholder:text-farm-500 font-sans
+           focus:outline-none focus:border-olive-600/60 focus:ring-1 focus:ring-olive-600/30
+           transition-all duration-200;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-olive-400 via-harvest-400 to-olive-300 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-hero {
+    @apply bg-gradient-to-br from-olive-300 via-harvest-300 to-olive-400 bg-clip-text text-transparent;
+  }
+
+  .glow-dot {
+    @apply w-2 h-2 rounded-full bg-growth animate-pulse;
+    box-shadow: 0 0 8px rgba(144, 190, 109, 0.6);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
