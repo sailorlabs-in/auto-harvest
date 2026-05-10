@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch } from '../store';
 import { setAuth } from '../store/slices/authSlice';
+import { authApi } from '../api/apiClient';
 import { Navbar } from '../components/layout/Navbar';
 import { Sprout, Mail, Lock, User, ArrowRight, Loader2, Eye, EyeOff, Check, X } from 'lucide-react';
 
@@ -53,16 +54,17 @@ export function RegisterPage() {
 
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 800));
+      const response = await authApi.register({ username, email, password });
       dispatch(
         setAuth({
-          user: { id: '1', username, email, createdAt: new Date().toISOString() },
-          token: 'demo-token',
+          user: response.user,
+          token: response.accessToken,
         }),
       );
       navigate('/dashboard');
-    } catch {
-      setError('Registration failed. Please try again.');
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(typeof msg === 'string' ? msg : msg[0] || 'Registration failed.');
     } finally {
       setLoading(false);
     }

@@ -16,6 +16,12 @@ export class SaveGame {
   @Column('text')
   serializedState: string;
 
+  @Column({ default: 1 })
+  version: number;
+
+  @Column({ nullable: true })
+  checksum: string;
+
   @UpdateDateColumn()
   updatedAt: Date;
 }

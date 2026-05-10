@@ -4,23 +4,29 @@
   "private": true,
   "description": "AutoHarvest — Browser-based farming automation programming game",
   "scripts": {
-    "dev": "pnpm -r --parallel dev",
-    "dev:web": "pnpm --filter @autoharvest/web dev",
-    "dev:server": "pnpm --filter @autoharvest/server start:dev",
-    "build": "pnpm -r build",
-    "build:shared": "pnpm --filter @autoharvest/shared build",
-    "build:web": "pnpm --filter @autoharvest/web build",
-    "build:server": "pnpm --filter @autoharvest/server build",
-    "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint",
+    "dev": "nx run-many -t dev",
+    "dev:web": "nx run @autoharvest/web:dev",
+    "dev:server": "nx run @autoharvest/server:dev",
+    "build": "nx run-many -t build",
+    "build:shared": "nx run @autoharvest/shared:build",
+    "build:web": "nx run @autoharvest/web:build",
+    "build:server": "nx run @autoharvest/server:build",
+    "typecheck": "nx run-many -t typecheck",
+    "lint": "nx run-many -t lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "devDependencies": {
     "prettier": "^3.3.3",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "nx": "22.7.1"
   },
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "nx"
+    ]
   }
 }

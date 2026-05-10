@@ -1,14 +1,16 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAppDispatch } from '../store';
 import { setAuth } from '../store/slices/authSlice';
+import { authApi } from '../api/apiClient';
 import { Navbar } from '../components/layout/Navbar';
 import { Sprout, Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,15 +18,26 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Where to redirect after login (default: dashboard)
+  const from = (location.state as any)?.from?.pathname || '/dashboard';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 800));
-      dispatch(setAuth({ user: { id: '1', username: email.split('@')[0], email, createdAt: new Date().toISOString() }, token: 'demo-token' }));
-      navigate('/dashboard');
-    } catch { setError('Invalid credentials.'); } finally { setLoading(false); }
+      const response = await authApi.login({ email, password });
+      dispatch(setAuth({
+        user: response.user,
+        token: response.accessToken,
+      }));
+      navigate(from, { replace: true });
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Invalid credentials. Please try again.';
+      setError(typeof msg === 'string' ? msg : msg[0] || 'Login failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

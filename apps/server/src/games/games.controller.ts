@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Delete, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { GamesService } from './games.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsArray } from 'class-validator';
 
 class CreateWorldDto {
   @IsString() name: string;
@@ -10,6 +10,13 @@ class CreateWorldDto {
 
 class SaveGameDto {
   @IsString() serializedState: string;
+}
+
+class ValidatePurchaseDto {
+  @IsString() itemId: string;
+  @IsNumber() currentGold: number;
+  @IsNumber() currentTier: number;
+  @IsArray() purchasedItems: string[];
 }
 
 @Controller('games')
@@ -45,5 +52,16 @@ export class GamesController {
   @Get('worlds/:id/load')
   loadGame(@Param('id') id: string) {
     return this.gamesService.loadGame(id);
+  }
+
+  @Post('worlds/:id/validate-purchase')
+  validatePurchase(@Param('id') id: string, @Body() dto: ValidatePurchaseDto) {
+    return this.gamesService.validatePurchase(
+      id,
+      dto.itemId,
+      dto.currentGold,
+      dto.currentTier,
+      dto.purchasedItems,
+    );
   }
 }
