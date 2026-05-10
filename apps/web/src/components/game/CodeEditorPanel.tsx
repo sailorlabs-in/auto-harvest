@@ -90,14 +90,20 @@ export function CodeEditorPanel() {
     }
   }, [dispatch, selectedDrone]);
 
-  if (!selectedDrone) {
+  if (drones.length === 0) {
     return (
       <div className="glass-panel-dark flex flex-col h-full overflow-hidden items-center justify-center p-6 text-center">
         <Bot className="w-12 h-12 text-farm-700 mb-4 mx-auto" />
-        <h3 className="text-farm-300 font-display font-semibold mb-2">No Drone Selected</h3>
-        <p className="text-farm-500 text-sm">Go to the Drones tab and select a drone to edit its autonomous script. The farmer cannot be scripted.</p>
+        <h3 className="text-farm-300 font-display font-semibold mb-2">No Drones Available</h3>
+        <p className="text-farm-500 text-sm">Buy a drone from the Shop first to start scripting!</p>
       </div>
     );
+  }
+
+  // If drones exist but none selected, select the first one
+  if (!selectedDrone && drones.length > 0) {
+    dispatch({ type: 'ui/setSelectedDroneForScript', payload: drones[0].id });
+    return null;
   }
 
   return (
@@ -107,11 +113,29 @@ export function CodeEditorPanel() {
       transition={{ type: 'spring', stiffness: 400, damping: 30, delay: 0.3 }}
       className="glass-panel-dark flex flex-col h-full overflow-hidden"
     >
+      {/* Drone Tabs */}
+      <div className="flex overflow-x-auto border-b border-farm-800/40 custom-scrollbar bg-farm-900/20">
+        {drones.map((drone) => (
+          <button
+            key={drone.id}
+            onClick={() => dispatch({ type: 'ui/setSelectedDroneForScript', payload: drone.id })}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+              selectedDrone?.id === drone.id
+                ? 'border-olive-500 text-olive-400 bg-farm-800/40'
+                : 'border-transparent text-farm-500 hover:text-farm-300 hover:bg-farm-800/20'
+            }`}
+          >
+            <Bot className="w-4 h-4" />
+            {drone.name}
+          </button>
+        ))}
+      </div>
+
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-farm-800/40">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-farm-800/40 bg-farm-900/10">
         <div className="flex items-center gap-2">
           <Code2 className="w-4 h-4 text-olive-400" />
-          <span className="text-sm font-medium text-farm-300">Script: {selectedDrone.name}</span>
+          <span className="text-sm font-medium text-farm-300">Scripting: {selectedDrone?.name}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <motion.button whileHover={{ scale: 1.1, rotate: -90 }} whileTap={{ scale: 0.9 }}

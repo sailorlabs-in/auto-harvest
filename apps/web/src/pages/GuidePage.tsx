@@ -40,6 +40,8 @@ const apiCommands = [
   { name: 'getPosition()', desc: 'Get robot position & direction', category: 'info' },
   { name: 'getInventory()', desc: 'Get all items in inventory', category: 'info' },
   { name: 'getEnergy()', desc: 'Get current/max energy', category: 'info' },
+  { name: 'getDrones()', desc: 'Get array of all drones', category: 'info' },
+  { name: 'getGridSize()', desc: 'Get farm {width, height}', category: 'info' },
   { name: 'log("msg")', desc: 'Print message to console', category: 'utility' },
   { name: 'await wait(n)', desc: 'Wait for n game ticks', category: 'utility' },
 ];
@@ -51,6 +53,9 @@ const crops = [
   { emoji: '🥔', name: 'Potato', growth: '60 ticks', yield: 3, cost: 4, sell: 5 },
   { emoji: '🍅', name: 'Tomato', growth: '70 ticks', yield: 5, cost: 8, sell: 6 },
   { emoji: '🎃', name: 'Pumpkin', growth: '120 ticks', yield: 1, cost: 20, sell: 30 },
+  { emoji: '🍓', name: 'Strawberry', growth: '35 ticks', yield: 6, cost: 6, sell: 4 },
+  { emoji: '🌻', name: 'Sunflower', growth: '90 ticks', yield: 2, cost: 15, sell: 12 },
+  { emoji: '🍈', name: 'Melon', growth: '150 ticks', yield: 1, cost: 30, sell: 50 },
 ];
 
 const tips = [
