@@ -12,12 +12,29 @@ import { ConsolePanel } from '../components/game/ConsolePanel';
 import { ShopPanel } from '../components/game/ShopPanel';
 import { DroneManagerPanel } from '../components/game/DroneManagerPanel';
 import { store, useAppSelector, useAppDispatch } from '../store';
-import { selectTier, selectIsScriptUnlocked, earnGold, loadProgression } from '../store/slices/progressionSlice';
+import {
+  selectTier,
+  selectIsScriptUnlocked,
+  loadProgression,
+} from '../store/slices/progressionSlice';
 import { selectDrones, loadSerializedState } from '../store/slices/gameSlice';
 import { setActivePanel, type ActivePanel, addConsoleLog } from '../store/slices/uiSlice';
 import { worldsApi } from '../api/apiClient';
 import { Link } from 'react-router-dom';
-import { Sprout, Home, Save, Download, Settings, ShoppingCart, Code2, Bot, Loader2, Cloud, CloudOff, Check } from 'lucide-react';
+import {
+  Sprout,
+  Home,
+  Save,
+  Download,
+  Settings,
+  ShoppingCart,
+  Code2,
+  Bot,
+  Loader2,
+  Cloud,
+  CloudOff,
+  Check,
+} from 'lucide-react';
 import { v4 as uuid } from 'uuid';
 
 const AUTO_SAVE_INTERVAL_MS = 60_000; // Auto-save every 60 seconds
@@ -35,7 +52,7 @@ export function GamePage() {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [worldName, setWorldName] = useState<string | null>(null);
-  const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isServerMode = !!worldId && isAuthenticated;
 
   // ── Load world from server on mount ──
@@ -60,29 +77,35 @@ export function GamePage() {
             if (parsed.progression) {
               store.dispatch(loadProgression(parsed.progression));
             }
-            dispatch(addConsoleLog({
-              id: uuid(),
-              message: `☁️ World "${world.name}" loaded from server`,
-              type: 'success',
-              timestamp: Date.now(),
-            }));
+            dispatch(
+              addConsoleLog({
+                id: uuid(),
+                message: `☁️ World "${world.name}" loaded from server`,
+                type: 'success',
+                timestamp: Date.now(),
+              }),
+            );
           }
         } catch {
           // No save found — fresh world, that's okay
-          dispatch(addConsoleLog({
-            id: uuid(),
-            message: `🌱 New world "${world.name}" — start farming!`,
-            type: 'info',
-            timestamp: Date.now(),
-          }));
+          dispatch(
+            addConsoleLog({
+              id: uuid(),
+              message: `🌱 New world "${world.name}" — start farming!`,
+              type: 'info',
+              timestamp: Date.now(),
+            }),
+          );
         }
       } catch (err: any) {
-        dispatch(addConsoleLog({
-          id: uuid(),
-          message: `❌ Failed to load world: ${err.response?.data?.message || err.message}`,
-          type: 'error',
-          timestamp: Date.now(),
-        }));
+        dispatch(
+          addConsoleLog({
+            id: uuid(),
+            message: `❌ Failed to load world: ${err.response?.data?.message || err.message}`,
+            type: 'error',
+            timestamp: Date.now(),
+          }),
+        );
       } finally {
         setLoadingWorld(false);
       }
@@ -101,45 +124,54 @@ export function GamePage() {
   }, []);
 
   // ── Save to server ──
-  const handleServerSave = useCallback(async (silent = false) => {
-    if (!worldId || !isAuthenticated) return;
-    setSaving(true);
-    setSaveStatus('saving');
-    try {
-      await worldsApi.save(worldId, serializeState());
-      setSaveStatus('saved');
-      if (!silent) {
-        dispatch(addConsoleLog({
-          id: uuid(),
-          message: '☁️ Game saved to server',
-          type: 'success',
-          timestamp: Date.now(),
-        }));
+  const handleServerSave = useCallback(
+    async (silent = false) => {
+      if (!worldId || !isAuthenticated) return;
+      setSaving(true);
+      setSaveStatus('saving');
+      try {
+        await worldsApi.save(worldId, serializeState());
+        setSaveStatus('saved');
+        if (!silent) {
+          dispatch(
+            addConsoleLog({
+              id: uuid(),
+              message: '☁️ Game saved to server',
+              type: 'success',
+              timestamp: Date.now(),
+            }),
+          );
+        }
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch (err: any) {
+        setSaveStatus('error');
+        dispatch(
+          addConsoleLog({
+            id: uuid(),
+            message: `❌ Save failed: ${err.response?.data?.message || err.message}`,
+            type: 'error',
+            timestamp: Date.now(),
+          }),
+        );
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      } finally {
+        setSaving(false);
       }
-      setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch (err: any) {
-      setSaveStatus('error');
-      dispatch(addConsoleLog({
-        id: uuid(),
-        message: `❌ Save failed: ${err.response?.data?.message || err.message}`,
-        type: 'error',
-        timestamp: Date.now(),
-      }));
-      setTimeout(() => setSaveStatus('idle'), 3000);
-    } finally {
-      setSaving(false);
-    }
-  }, [worldId, isAuthenticated, serializeState, dispatch]);
+    },
+    [worldId, isAuthenticated, serializeState, dispatch],
+  );
 
   // ── Local save (guest mode) ──
   const handleLocalSave = useCallback(() => {
     localStorage.setItem('autoharvest-save', serializeState());
-    dispatch(addConsoleLog({
-      id: uuid(),
-      message: '💾 Game saved locally',
-      type: 'success',
-      timestamp: Date.now(),
-    }));
+    dispatch(
+      addConsoleLog({
+        id: uuid(),
+        message: '💾 Game saved locally',
+        type: 'success',
+        timestamp: Date.now(),
+      }),
+    );
     setSaveStatus('saved');
     setTimeout(() => setSaveStatus('idle'), 2000);
   }, [serializeState, dispatch]);
@@ -152,27 +184,33 @@ export function GamePage() {
         const parsed = JSON.parse(data);
         if (parsed.game) store.dispatch(loadSerializedState(JSON.stringify(parsed.game)));
         if (parsed.progression) store.dispatch(loadProgression(parsed.progression));
-        dispatch(addConsoleLog({
-          id: uuid(),
-          message: '💾 Game loaded from local save',
-          type: 'success',
-          timestamp: Date.now(),
-        }));
+        dispatch(
+          addConsoleLog({
+            id: uuid(),
+            message: '💾 Game loaded from local save',
+            type: 'success',
+            timestamp: Date.now(),
+          }),
+        );
       } catch {
-        dispatch(addConsoleLog({
-          id: uuid(),
-          message: '❌ Failed to load local save',
-          type: 'error',
-          timestamp: Date.now(),
-        }));
+        dispatch(
+          addConsoleLog({
+            id: uuid(),
+            message: '❌ Failed to load local save',
+            type: 'error',
+            timestamp: Date.now(),
+          }),
+        );
       }
     } else {
-      dispatch(addConsoleLog({
-        id: uuid(),
-        message: '⚠ No local save found',
-        type: 'warn',
-        timestamp: Date.now(),
-      }));
+      dispatch(
+        addConsoleLog({
+          id: uuid(),
+          message: '⚠ No local save found',
+          type: 'warn',
+          timestamp: Date.now(),
+        }),
+      );
     }
   }, [dispatch]);
 
@@ -186,20 +224,24 @@ export function GamePage() {
         const parsed = JSON.parse(save.serializedState);
         if (parsed.game) store.dispatch(loadSerializedState(JSON.stringify(parsed.game)));
         if (parsed.progression) store.dispatch(loadProgression(parsed.progression));
-        dispatch(addConsoleLog({
-          id: uuid(),
-          message: '☁️ Game reloaded from server',
-          type: 'success',
-          timestamp: Date.now(),
-        }));
+        dispatch(
+          addConsoleLog({
+            id: uuid(),
+            message: '☁️ Game reloaded from server',
+            type: 'success',
+            timestamp: Date.now(),
+          }),
+        );
       }
     } catch (err: any) {
-      dispatch(addConsoleLog({
-        id: uuid(),
-        message: `❌ Load failed: ${err.response?.data?.message || err.message}`,
-        type: 'error',
-        timestamp: Date.now(),
-      }));
+      dispatch(
+        addConsoleLog({
+          id: uuid(),
+          message: `❌ Load failed: ${err.response?.data?.message || err.message}`,
+          type: 'error',
+          timestamp: Date.now(),
+        }),
+      );
     } finally {
       setLoadingWorld(false);
     }
@@ -232,7 +274,9 @@ export function GamePage() {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       navigator.sendBeacon(
         `${apiUrl}/api/games/worlds/${worldId}/save`,
-        new Blob([JSON.stringify({ serializedState: serializeState() })], { type: 'application/json' }),
+        new Blob([JSON.stringify({ serializedState: serializeState() })], {
+          type: 'application/json',
+        }),
       );
     };
 
@@ -251,7 +295,11 @@ export function GamePage() {
   if (loadingWorld) {
     return (
       <div className="h-screen w-screen bg-farm-975 flex items-center justify-center">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
           <Loader2 className="w-10 h-10 text-olive-400 animate-spin mx-auto mb-4" />
           <p className="font-display font-semibold text-farm-200 text-lg">Loading world...</p>
           <p className="text-farm-500 text-sm mt-1">{worldName || 'Connecting to server'}</p>
@@ -271,13 +319,23 @@ export function GamePage() {
       >
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2 group">
-            <motion.div whileHover={{ rotate: 15, scale: 1.1 }} className="w-7 h-7 rounded-lg bg-gradient-to-br from-olive-500 to-olive-700 flex items-center justify-center">
+            <motion.div
+              whileHover={{ rotate: 15, scale: 1.1 }}
+              className="w-7 h-7 rounded-lg bg-gradient-to-br from-olive-500 to-olive-700 flex items-center justify-center"
+            >
               <Sprout className="w-4 h-4 text-white" />
             </motion.div>
-            <span className="font-display font-bold text-sm text-farm-200 group-hover:text-olive-300 transition-colors">AutoHarvest</span>
+            <span className="font-display font-bold text-sm text-farm-200 group-hover:text-olive-300 transition-colors">
+              AutoHarvest
+            </span>
           </Link>
           <div className="w-px h-5 bg-farm-700/40" />
-          <Link to={isAuthenticated ? "/dashboard" : "/"} className="btn-ghost !py-1 !px-2 text-xs flex items-center gap-1"><Home className="w-3 h-3" /> {isAuthenticated ? 'Dashboard' : 'Home'}</Link>
+          <Link
+            to={isAuthenticated ? '/dashboard' : '/'}
+            className="btn-ghost !py-1 !px-2 text-xs flex items-center gap-1"
+          >
+            <Home className="w-3 h-3" /> {isAuthenticated ? 'Dashboard' : 'Home'}
+          </Link>
           {/* World name */}
           {worldName && (
             <>
@@ -296,19 +354,28 @@ export function GamePage() {
               animate={{ opacity: 1, scale: 1 }}
               className="flex items-center gap-1 mr-2"
             >
-              {saveStatus === 'saving' && <Loader2 className="w-3 h-3 text-farm-500 animate-spin" />}
+              {saveStatus === 'saving' && (
+                <Loader2 className="w-3 h-3 text-farm-500 animate-spin" />
+              )}
               {saveStatus === 'saved' && <Check className="w-3 h-3 text-growth" />}
               {saveStatus === 'error' && <CloudOff className="w-3 h-3 text-red-400" />}
               {saveStatus === 'idle' && <Cloud className="w-3 h-3 text-farm-600" />}
-              <span className={`text-[10px] ${
-                saveStatus === 'saved' ? 'text-growth' :
-                saveStatus === 'error' ? 'text-red-400' :
-                'text-farm-600'
-              }`}>
-                {saveStatus === 'saving' ? 'Saving...' :
-                 saveStatus === 'saved' ? 'Saved' :
-                 saveStatus === 'error' ? 'Save failed' :
-                 'Cloud'}
+              <span
+                className={`text-[10px] ${
+                  saveStatus === 'saved'
+                    ? 'text-growth'
+                    : saveStatus === 'error'
+                      ? 'text-red-400'
+                      : 'text-farm-600'
+                }`}
+              >
+                {saveStatus === 'saving'
+                  ? 'Saving...'
+                  : saveStatus === 'saved'
+                    ? 'Saved'
+                    : saveStatus === 'error'
+                      ? 'Save failed'
+                      : 'Cloud'}
               </span>
             </motion.div>
           )}
@@ -318,13 +385,27 @@ export function GamePage() {
             </span>
           )}
 
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSave} disabled={saving}
-            className="btn-ghost !py-1 !px-2 text-xs flex items-center gap-1">
-            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} Save
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-ghost !py-1 !px-2 text-xs flex items-center gap-1"
+          >
+            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}{' '}
+            Save
           </motion.button>
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleLoad}
-            className="btn-ghost !py-1 !px-2 text-xs flex items-center gap-1"><Download className="w-3 h-3" /> Load</motion.button>
-          <button className="btn-ghost !py-1 !px-2 text-xs flex items-center gap-1 text-farm-500"><Settings className="w-3 h-3" /></button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleLoad}
+            className="btn-ghost !py-1 !px-2 text-xs flex items-center gap-1"
+          >
+            <Download className="w-3 h-3" /> Load
+          </motion.button>
+          <button className="btn-ghost !py-1 !px-2 text-xs flex items-center gap-1 text-farm-500">
+            <Settings className="w-3 h-3" />
+          </button>
         </div>
       </motion.div>
 
@@ -345,8 +426,12 @@ export function GamePage() {
           <div className="flex-1 glass-panel overflow-hidden">
             <GameCanvas />
           </div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-            className="text-farm-600 text-xs px-2 flex gap-3">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-farm-600 text-xs px-2 flex gap-3"
+          >
             <span>WASD: Move</span>
             <span>Space: Harvest/Plant</span>
             <span>Q/E: Cycle Crop</span>
