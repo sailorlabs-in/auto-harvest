@@ -106,6 +106,7 @@ export function GamePage() {
             className="text-farm-600 text-xs px-2 flex gap-3">
             <span>WASD: Move</span>
             <span>Space: Harvest/Plant</span>
+            <span>Q/E: Cycle Crop</span>
             {drones.length > 0 && <span>Tab: Switch Control</span>}
             {drones.length > 0 && <span>1-{Math.min(drones.length, 4)}: Select Drone</span>}
           </motion.div>

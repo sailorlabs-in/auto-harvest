@@ -102,9 +102,10 @@ export class Renderer {
       default: color = def.color.seed; size = 6;
     }
 
-    this.ctx.fillStyle = color;
-    this.ctx.beginPath();
+    // Early stages are the same for all crops
     if (crop.stage <= GrowthStage.SPROUT) {
+      this.ctx.fillStyle = color;
+      this.ctx.beginPath();
       this.ctx.arc(cx, cy + 8, size / 2, 0, Math.PI * 2);
       this.ctx.fill();
       if (crop.stage === GrowthStage.SPROUT) {
@@ -114,20 +115,158 @@ export class Renderer {
         this.ctx.ellipse(cx + 4, cy, 4, 2, 0.3, 0, Math.PI * 2); this.ctx.fill();
       }
     } else {
-      this.ctx.strokeStyle = '#5A7D3A'; this.ctx.lineWidth = 3;
-      this.ctx.beginPath(); this.ctx.moveTo(cx, cy + TILE_SIZE / 2 - 10); this.ctx.lineTo(cx, cy - size / 2 + 4); this.ctx.stroke();
-      this.ctx.fillStyle = '#6B8E3D';
-      this.ctx.beginPath(); this.ctx.ellipse(cx - 6, cy + 4, 8, 4, -0.5, 0, Math.PI * 2); this.ctx.fill();
-      this.ctx.beginPath(); this.ctx.ellipse(cx + 6, cy + 8, 7, 3, 0.5, 0, Math.PI * 2); this.ctx.fill();
-      this.ctx.fillStyle = color; this.ctx.beginPath();
-      this.ctx.arc(cx, cy - size / 4, size / 3, 0, Math.PI * 2); this.ctx.fill();
+      // Mature stages: draw crop-specific shapes
+      this.drawCropShape(crop.type, cx, cy, px, py, size, color, crop.stage);
     }
+
     this.ctx.shadowBlur = 0; this.ctx.shadowColor = 'transparent';
 
+    // Growth progress bar
     if (crop.stage !== GrowthStage.HARVESTABLE) {
       const barW = TILE_SIZE - 16, barH = 4, barX = px + 8, barY = py + TILE_SIZE - 10;
       this.ctx.fillStyle = 'rgba(0,0,0,0.4)'; this.ctx.fillRect(barX, barY, barW, barH);
       this.ctx.fillStyle = color; this.ctx.fillRect(barX, barY, barW * (crop.growthProgress / 100), barH);
+    }
+  }
+
+  private drawCropShape(cropType: string, cx: number, cy: number, px: number, py: number, size: number, color: string, stage: number) {
+    const ctx = this.ctx;
+
+    // Draw stem (shared for most crops)
+    const drawStem = () => {
+      ctx.strokeStyle = '#5A7D3A'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(cx, cy + TILE_SIZE / 2 - 10); ctx.lineTo(cx, cy - size / 2 + 4); ctx.stroke();
+    };
+
+    // Draw leaves (shared)
+    const drawLeaves = () => {
+      ctx.fillStyle = '#6B8E3D';
+      ctx.beginPath(); ctx.ellipse(cx - 6, cy + 4, 8, 4, -0.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx + 6, cy + 8, 7, 3, 0.5, 0, Math.PI * 2); ctx.fill();
+    };
+
+    switch (cropType) {
+      case 'wheat': {
+        // Wheat: multiple stalks with grain heads
+        drawStem();
+        // Extra stalks
+        ctx.strokeStyle = '#5A7D3A'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(cx - 6, cy + TILE_SIZE / 2 - 10); ctx.lineTo(cx - 4, cy - size / 2 + 8); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx + 6, cy + TILE_SIZE / 2 - 10); ctx.lineTo(cx + 4, cy - size / 2 + 8); ctx.stroke();
+        // Grain heads (small ellipses)
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.ellipse(cx, cy - size / 3, size / 5, size / 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx - 4, cy - size / 4 + 2, size / 6, size / 4, -0.2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 4, cy - size / 4 + 2, size / 6, size / 4, 0.2, 0, Math.PI * 2); ctx.fill();
+        break;
+      }
+      case 'corn': {
+        // Corn: tall thick stalk with corn cob
+        ctx.strokeStyle = '#4A7D2A'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(cx, cy + TILE_SIZE / 2 - 10); ctx.lineTo(cx, cy - size / 2); ctx.stroke();
+        // Big leaves
+        ctx.fillStyle = '#6B8E3D';
+        ctx.beginPath(); ctx.ellipse(cx - 8, cy + 2, 12, 4, -0.4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 8, cy + 6, 11, 3.5, 0.4, 0, Math.PI * 2); ctx.fill();
+        // Corn cob (rounded rectangle)
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        this.roundRect(cx - size / 5, cy - size / 3, size / 2.5, size / 2, 3);
+        ctx.fill();
+        // Husk leaves on cob
+        ctx.fillStyle = '#7DA84E';
+        ctx.beginPath(); ctx.ellipse(cx - size / 4, cy - size / 5, 4, 7, -0.3, 0, Math.PI * 2); ctx.fill();
+        break;
+      }
+      case 'carrot': {
+        // Carrot: leafy green top, orange triangle root
+        // Feathery green top
+        ctx.fillStyle = '#5A8E3D';
+        ctx.beginPath(); ctx.ellipse(cx - 3, cy - 4, 3, 8, -0.2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 3, cy - 4, 3, 8, 0.2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx, cy - 6, 2.5, 9, 0, 0, Math.PI * 2); ctx.fill();
+        // Carrot body (triangle pointing down)
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(cx - size / 4, cy + 2);
+        ctx.lineTo(cx + size / 4, cy + 2);
+        ctx.lineTo(cx, cy + size / 1.5);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+      case 'potato': {
+        // Potato: small bush on top, oval potato showing from soil
+        drawStem();
+        // Bushy leaves
+        ctx.fillStyle = '#6B8E3D';
+        ctx.beginPath(); ctx.ellipse(cx - 4, cy - 2, 9, 5, -0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 4, cy, 8, 4.5, 0.3, 0, Math.PI * 2); ctx.fill();
+        // Potato tuber (lumpy oval)
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.ellipse(cx, cy + 10, size / 3, size / 4.5, 0.1, 0, Math.PI * 2); ctx.fill();
+        // Dirt specks
+        ctx.fillStyle = 'rgba(90,70,50,0.4)';
+        ctx.beginPath(); ctx.arc(cx - 3, cy + 11, 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + 4, cy + 9, 1, 0, Math.PI * 2); ctx.fill();
+        break;
+      }
+      case 'tomato': {
+        // Tomato: vine/stem with round fruit
+        drawStem();
+        drawLeaves();
+        // Tomato fruit (circle with star cap)
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(cx, cy - size / 5, size / 3, 0, Math.PI * 2); ctx.fill();
+        // Highlight
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.beginPath(); ctx.arc(cx - size / 10, cy - size / 4, size / 8, 0, Math.PI * 2); ctx.fill();
+        // Small star top
+        ctx.fillStyle = '#5A8E3D';
+        for (let i = 0; i < 5; i++) {
+          const angle = (i * Math.PI * 2) / 5 - Math.PI / 2;
+          const sx = cx + Math.cos(angle) * 4;
+          const sy = cy - size / 3 + Math.sin(angle) * 3;
+          ctx.beginPath(); ctx.ellipse(sx, sy, 2, 3, angle, 0, Math.PI * 2); ctx.fill();
+        }
+        break;
+      }
+      case 'pumpkin': {
+        // Pumpkin: large ribbed gourd with curly vine
+        // Vine
+        ctx.strokeStyle = '#5A7D3A'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - size / 3);
+        ctx.quadraticCurveTo(cx + 8, cy - size / 2 - 5, cx + 12, cy - size / 2);
+        ctx.stroke();
+        // Curly tendril
+        ctx.beginPath();
+        ctx.arc(cx + 14, cy - size / 2, 3, 0, Math.PI * 1.5);
+        ctx.stroke();
+        // Pumpkin body (overlapping ovals for ridged look)
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.ellipse(cx, cy + 3, size / 2.5, size / 3, 0, 0, Math.PI * 2); ctx.fill();
+        // Side ribs
+        const ribColor = stage >= GrowthStage.HARVESTABLE ? '#E05500' : '#D08040';
+        ctx.fillStyle = ribColor;
+        ctx.beginPath(); ctx.ellipse(cx - size / 4, cy + 3, size / 5, size / 3.2, -0.15, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + size / 4, cy + 3, size / 5, size / 3.2, 0.15, 0, Math.PI * 2); ctx.fill();
+        // Overlay center rib
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.ellipse(cx, cy + 3, size / 4, size / 3.1, 0, 0, Math.PI * 2); ctx.fill();
+        // Small leaf
+        ctx.fillStyle = '#6B8E3D';
+        ctx.beginPath(); ctx.ellipse(cx - 2, cy - size / 3.5, 5, 3, -0.5, 0, Math.PI * 2); ctx.fill();
+        break;
+      }
+      default: {
+        // Fallback generic crop
+        drawStem();
+        drawLeaves();
+        ctx.fillStyle = color; ctx.beginPath();
+        ctx.arc(cx, cy - size / 4, size / 3, 0, Math.PI * 2); ctx.fill();
+        break;
+      }
     }
   }
 

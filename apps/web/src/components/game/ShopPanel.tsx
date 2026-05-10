@@ -50,12 +50,27 @@ export function ShopPanel() {
       case 'speed-upgrade':
         // Handled via progression state
         break;
-      case 'seed-pack-wheat': dispatch(addItem({ type: 'seed_wheat', quantity: 20 })); break;
-      case 'seed-pack-carrot': dispatch(addItem({ type: 'seed_carrot', quantity: 15 })); break;
       case 'unlock-corn': dispatch(addItem({ type: 'seed_corn', quantity: 10 })); break;
       case 'unlock-potato': dispatch(addItem({ type: 'seed_potato', quantity: 8 })); break;
       case 'unlock-tomato': dispatch(addItem({ type: 'seed_tomato', quantity: 6 })); break;
       case 'unlock-pumpkin': dispatch(addItem({ type: 'seed_pumpkin', quantity: 3 })); break;
+      default: {
+        // Handle seed packs generically: seed-pack-{crop} → seed_{crop}
+        if (item.id.startsWith('seed-pack-')) {
+          const seedPackQuantities: Record<string, number> = {
+            'seed-pack-wheat': 20,
+            'seed-pack-carrot': 15,
+            'seed-pack-corn': 10,
+            'seed-pack-potato': 12,
+            'seed-pack-tomato': 8,
+            'seed-pack-pumpkin': 5,
+          };
+          const cropName = item.id.replace('seed-pack-', '');
+          const qty = seedPackQuantities[item.id] || 10;
+          dispatch(addItem({ type: `seed_${cropName}`, quantity: qty }));
+        }
+        break;
+      }
     }
 
     // Flash feedback

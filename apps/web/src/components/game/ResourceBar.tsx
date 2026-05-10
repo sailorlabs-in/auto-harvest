@@ -1,13 +1,15 @@
 // ============================================================
-// AutoHarvest — Resource Bar (Tier-aware + Drone count)
+// AutoHarvest — Resource Bar (Tier-aware + Dynamic seeds)
 // ============================================================
 
 import { motion } from 'framer-motion';
 import { useAppSelector } from '../../store';
 import { selectFarmer, selectDrones, selectControlMode, selectActiveDrone, selectGameStats, selectInventory } from '../../store/slices/gameSlice';
-import { selectTier } from '../../store/slices/progressionSlice';
+import { selectTier, selectUnlockedCrops } from '../../store/slices/progressionSlice';
 import { TierProgressBar } from './TierProgressBar';
 import { Zap, Bot } from 'lucide-react';
+import { CROP_DEFINITIONS } from '@autoharvest/shared';
+import type { CropType } from '@autoharvest/shared';
 
 export function ResourceBar() {
   const farmer = useAppSelector(selectFarmer);
@@ -17,10 +19,9 @@ export function ResourceBar() {
   const stats = useAppSelector(selectGameStats);
   const inventory = useAppSelector(selectInventory);
   const tier = useAppSelector(selectTier);
+  const unlockedCrops = useAppSelector(selectUnlockedCrops);
 
   const gold = inventory.items.gold || 0;
-  const seedWheat = inventory.items.seed_wheat || 0;
-  const seedCarrot = inventory.items.seed_carrot || 0;
 
   // Get active entity energy
   const activeEntity = controlMode === 'drone' && activeDrone ? activeDrone : farmer;
@@ -73,13 +74,17 @@ export function ResourceBar() {
         💰 {gold}
       </span>
 
-      {/* Seeds */}
-      <span className="flex items-center gap-1 text-farm-400 shrink-0">
-        🌾 {seedWheat}
-      </span>
-      <span className="flex items-center gap-1 text-farm-400 shrink-0">
-        🥕 {seedCarrot}
-      </span>
+      {/* Seeds — dynamically show all unlocked crops */}
+      {unlockedCrops.map((cropType) => {
+        const def = CROP_DEFINITIONS[cropType as CropType];
+        if (!def) return null;
+        const seedCount = inventory.items[`seed_${cropType}`] || 0;
+        return (
+          <span key={cropType} className="flex items-center gap-1 text-farm-400 shrink-0" title={`${def.name} Seeds`}>
+            {def.emoji} {seedCount}
+          </span>
+        );
+      })}
 
       {/* Spacer */}
       <div className="flex-1" />

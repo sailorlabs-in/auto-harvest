@@ -153,4 +153,20 @@ export const SHOP_ITEMS: ShopItem[] = [
     id: 'seed-pack-carrot', name: 'Carrot Seed Pack', description: 'Get 15 carrot seeds.',
     cost: 12, category: 'crop', icon: '🥕', requiredTier: 0, maxPurchases: 99,
   },
+  {
+    id: 'seed-pack-corn', name: 'Corn Seed Pack', description: 'Get 10 corn seeds.',
+    cost: 25, category: 'crop', icon: '🌽', requiredTier: 1, maxPurchases: 99,
+  },
+  {
+    id: 'seed-pack-potato', name: 'Potato Seed Pack', description: 'Get 12 potato seeds.',
+    cost: 20, category: 'crop', icon: '🥔', requiredTier: 2, maxPurchases: 99,
+  },
+  {
+    id: 'seed-pack-tomato', name: 'Tomato Seed Pack', description: 'Get 8 tomato seeds.',
+    cost: 30, category: 'crop', icon: '🍅', requiredTier: 2, maxPurchases: 99,
+  },
+  {
+    id: 'seed-pack-pumpkin', name: 'Pumpkin Seed Pack', description: 'Get 5 pumpkin seeds.',
+    cost: 50, category: 'crop', icon: '🎃', requiredTier: 3, maxPurchases: 99,
+  },
 ];
